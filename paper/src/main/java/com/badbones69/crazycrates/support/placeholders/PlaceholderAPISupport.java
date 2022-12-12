@@ -12,9 +12,9 @@ import java.text.NumberFormat;
 
 public class PlaceholderAPISupport extends PlaceholderExpansion {
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private final CrazyManager crazyManager = plugin.getCrazyManager();
     
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String identifier) {

@@ -25,9 +25,9 @@ import java.util.List;
 
 public class MenuListener implements Listener {
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private static final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
     
     public static void openGUI(Player player) {
         int size = Files.CONFIG.getFile().getInt("Settings.InventorySize");

@@ -58,9 +58,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class CrazyManager {
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final FileManager fileManager = plugin.getStarter().getFileManager();
+    private final FileManager fileManager = plugin.getFileManager();
 
     // All the crates that have been loaded.
     private final ArrayList<Crate> crates = new ArrayList<>();
@@ -446,7 +446,7 @@ public class CrazyManager {
         boolean logFile = FileManager.Files.CONFIG.getFile().getBoolean("Settings.Crate-Actions.Log-File");
         boolean logConsole = FileManager.Files.CONFIG.getFile().getBoolean("Settings.Crate-Actions.Log-Console");
 
-        plugin.getStarter().getEventLogger().logCrateEvent(player, crate, keyType, logFile, logConsole);
+        plugin.getEventLogger().logCrateEvent(player, crate, keyType, logFile, logConsole);
     }
 
     /**

@@ -14,7 +14,7 @@ public class HolographicSupport implements HologramController {
     
     private static final HashMap<Block, Hologram> holograms = new HashMap<>();
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
     private final HolographicDisplaysAPI api = HolographicDisplaysAPI.get(plugin);
     

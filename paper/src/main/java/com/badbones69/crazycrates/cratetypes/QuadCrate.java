@@ -39,11 +39,11 @@ import java.util.Random;
  */
 public class QuadCrate implements Listener {
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
 
-    private final ChestStateHandler chestStateHandler = plugin.getStarter().getChestStateHandler();
+    private final ChestStateHandler chestStateHandler = plugin.getChestStateHandler();
 
     private final SessionManager sessionManager = new SessionManager();
 

@@ -3,7 +3,6 @@ package com.badbones69.crazycrates.api.enums.settings;
 import com.badbones69.crazycrates.Methods;
 import com.badbones69.crazycrates.api.FileManager;
 import org.simpleyaml.configuration.file.FileConfiguration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

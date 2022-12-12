@@ -27,15 +27,16 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class QuickCrate implements Listener {
+
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
+
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
+
+    private static final ChestStateHandler chestStateHandler = plugin.getChestStateHandler();
     
     public static ArrayList<Entity> allRewards = new ArrayList<>();
     public static HashMap<Player, Entity> rewards = new HashMap<>();
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
-
-    private static final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
     private static final HashMap<Player, BukkitTask> tasks = new HashMap<>();
-
-    private static final ChestStateHandler chestStateHandler = plugin.getStarter().getChestStateHandler();
 
     public static void openCrate(final Player player, final Location loc, Crate crate, KeyType keyType) {
         int keys = switch (keyType) {

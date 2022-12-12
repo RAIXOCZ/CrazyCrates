@@ -40,13 +40,13 @@ import java.util.HashMap;
 @Command(value = "crates", alias = {"crazycrates", "cc", "crate"})
 public class CrateBaseCommand extends BaseCommand {
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
 
-    private final FileManager fileManager = plugin.getStarter().getFileManager();
+    private final FileManager fileManager = plugin.getFileManager();
 
-    private final EventLogger eventLogger = plugin.getStarter().getEventLogger();
+    private final EventLogger eventLogger = plugin.getEventLogger();
 
     @Default
     @Permission(value = "crazycrates.command.player.menu", def = PermissionDefault.TRUE)

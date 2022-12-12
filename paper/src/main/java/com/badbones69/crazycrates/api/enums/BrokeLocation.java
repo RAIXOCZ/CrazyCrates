@@ -11,7 +11,7 @@ public class BrokeLocation {
     private final String locationName;
     private Crate crate;
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
     
     public BrokeLocation(String locationName, Crate crate, int x, int y, int z, String world) {
         this.x = x;

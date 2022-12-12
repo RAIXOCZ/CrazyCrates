@@ -12,7 +12,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class FireworkDamageListener implements Listener {
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
     private static final NamespacedKey noDamage = new NamespacedKey(plugin, "no-damage");
 

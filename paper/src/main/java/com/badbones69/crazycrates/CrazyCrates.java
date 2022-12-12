@@ -1,6 +1,10 @@
 package com.badbones69.crazycrates;
 
-import com.badbones69.crazycrates.api.FileManager.Files;
+import com.badbones69.crazycrates.api.Crates;
+import com.badbones69.crazycrates.api.CrazyManager;
+import com.badbones69.crazycrates.api.EventLogger;
+import com.badbones69.crazycrates.api.FileManager;
+import com.badbones69.crazycrates.api.Starter;
 import com.badbones69.crazycrates.api.enums.settings.Messages;
 import com.badbones69.crazycrates.api.managers.quadcrates.SessionManager;
 import com.badbones69.crazycrates.api.objects.CrateLocation;
@@ -23,6 +27,7 @@ import com.badbones69.crazycrates.listeners.MiscListener;
 import com.badbones69.crazycrates.listeners.PreviewListener;
 import com.badbones69.crazycrates.support.libs.PluginSupport;
 import com.badbones69.crazycrates.support.placeholders.PlaceholderAPISupport;
+import com.badbones69.crazycrates.support.structures.blocks.ChestStateHandler;
 import dev.triumphteam.cmd.bukkit.BukkitCommandManager;
 import dev.triumphteam.cmd.bukkit.message.BukkitMessageKey;
 import dev.triumphteam.cmd.core.message.MessageKey;
@@ -36,76 +41,76 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.simpleyaml.configuration.file.FileConfiguration;
-
+import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CrazyCrates extends JavaPlugin implements Listener {
+public class CrazyCrates extends JavaPlugin implements Crates, Listener {
 
-    private static CrazyCrates plugin;
+    private static CrazyCrates instance;
 
-    private Starter starter;
+    private final BukkitCommandManager<CommandSender> manager = BukkitCommandManager.create(this);
 
-    BukkitCommandManager<CommandSender> manager = BukkitCommandManager.create(this);
+    private final FileManager fileManager;
 
-    @Override
-    public void onEnable() {
-        plugin = this;
+    private final Starter starter;
 
-        starter = new Starter();
+    private final CrazyManager crazyManager;
+    private final ChestStateHandler chestStateHandler;
+    private final EventLogger eventLogger;
 
-        starter.run();
+    public CrazyCrates() {
+        super();
 
-        starter.getFileManager().setLog(true)
-                .registerDefaultGenerateFiles("CrateExample.yml", "/crates", "/crates")
-                .registerDefaultGenerateFiles("QuadCrateExample.yml", "/crates", "/crates")
-                .registerDefaultGenerateFiles("CosmicCrateExample.yml", "/crates", "/crates")
-                .registerDefaultGenerateFiles("QuickCrateExample.yml", "/crates", "/crates")
-                .registerDefaultGenerateFiles("classic.nbt", "/schematics", "/schematics")
-                .registerDefaultGenerateFiles("nether.nbt", "/schematics", "/schematics")
-                .registerDefaultGenerateFiles("outdoors.nbt", "/schematics", "/schematics")
-                .registerDefaultGenerateFiles("sea.nbt", "/schematics", "/schematics")
-                .registerDefaultGenerateFiles("soul.nbt", "/schematics", "/schematics")
-                .registerDefaultGenerateFiles("wooden.nbt", "/schematics", "/schematics")
-                .registerCustomFilesFolder("/crates")
-                .registerCustomFilesFolder("/schematics")
-                .setup();
+        instance = this;
 
-        // Clean files if we have to.
+        this.fileManager = new FileManager();
+
+        this.starter = new Starter();
+
+        this.crazyManager = new CrazyManager();
+        this.chestStateHandler = new ChestStateHandler();
+        this.eventLogger = new EventLogger();
+
+        try {
+            Field api = Provider.class.getDeclaredField("api");
+            api.setAccessible(true);
+            api.set(null, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        this.starter.run();
+
         cleanFiles();
 
         // Add extra messages.
         Messages.addMissingMessages();
 
-        FileConfiguration config = Files.CONFIG.getFile();
+        FileConfiguration config = FileManager.Files.CONFIG.getFile();
 
-        String metricsPath = config.getString("Settings.Toggle-Metrics");
         boolean metricsEnabled = config.getBoolean("Settings.Toggle-Metrics");
 
-        String crateLogFile = config.getString("Settings.Crate-Actions.Log-File");
-        String crateLogConsole = config.getString("Settings.Crate-Actions.Log-Console");
-
-        if (crateLogFile == null) {
-            config.set("Settings.Crate-Actions.Log-File", false);
-
-            Files.CONFIG.saveFile();
-        }
-
-        if (crateLogConsole == null) {
-            config.set("Settings.Crate-Actions.Log-Console", false);
-
-            Files.CONFIG.saveFile();
-        }
-
-        if (metricsPath == null) {
-            config.set("Settings.Toggle-Metrics", false);
-
-            Files.CONFIG.saveFile();
-        }
-
         if (metricsEnabled) new Metrics(this, 4514);
+    }
 
+    public void cleanFiles() {
+        if (!FileManager.Files.LOCATIONS.getFile().contains("Locations")) {
+            FileManager.Files.LOCATIONS.getFile().set("Locations.Clear", null);
+            FileManager.Files.LOCATIONS.saveFile();
+        }
+
+        if (!FileManager.Files.DATA.getFile().contains("Players")) {
+            FileManager.Files.DATA.getFile().set("Players.Clear", null);
+            FileManager.Files.DATA.saveFile();
+        }
+    }
+
+    @Override
+    public void onEnable() {
         enable();
     }
 
@@ -115,28 +120,27 @@ public class CrazyCrates extends JavaPlugin implements Listener {
 
         QuickCrate.removeAllRewards();
 
-        if (starter.getCrazyManager().getHologramController() != null) starter.getCrazyManager().getHologramController().removeAllHolograms();
+        if (this.crazyManager.getHologramController() != null) this.crazyManager.getHologramController().removeAllHolograms();
+
+        disable();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent e) {
-        starter.getCrazyManager().setNewPlayerKeys(e.getPlayer());
-        starter.getCrazyManager().loadOfflinePlayersKeys(e.getPlayer());
+        this.crazyManager.setNewPlayerKeys(e.getPlayer());
+        this.crazyManager.loadOfflinePlayersKeys(e.getPlayer());
     }
 
-    public void cleanFiles() {
-        if (!Files.LOCATIONS.getFile().contains("Locations")) {
-            Files.LOCATIONS.getFile().set("Locations.Clear", null);
-            Files.LOCATIONS.saveFile();
-        }
-
-        if (!Files.DATA.getFile().contains("Players")) {
-            Files.DATA.getFile().set("Players.Clear", null);
-            Files.DATA.saveFile();
-        }
+    /**
+     * @return The instance of the plugin.
+     */
+    public static CrazyCrates getInstance() {
+        return instance;
     }
 
-    private void enable() {
+    @Override
+    public void enable() {
+        this.starter.run();
 
         PluginManager pluginManager = getServer().getPluginManager();
 
@@ -158,43 +162,43 @@ public class CrazyCrates extends JavaPlugin implements Listener {
 
         pluginManager.registerEvents(this, this);
 
-        starter.getCrazyManager().loadCrates();
+        this.crazyManager.loadCrates();
 
-        if (!starter.getCrazyManager().getBrokeCrateLocations().isEmpty()) pluginManager.registerEvents(new BrokeLocationsListener(), this);
+        if (!this.crazyManager.getBrokeCrateLocations().isEmpty()) pluginManager.registerEvents(new BrokeLocationsListener(), this);
 
         if (PluginSupport.PLACEHOLDERAPI.isPluginEnabled()) new PlaceholderAPISupport().register();
 
-        manager.registerMessage(MessageKey.UNKNOWN_COMMAND, (sender, context) -> sender.sendMessage(Messages.UNKNOWN_COMMAND.getMessage()));
+        this.manager.registerMessage(MessageKey.UNKNOWN_COMMAND, (sender, context) -> sender.sendMessage(Messages.UNKNOWN_COMMAND.getMessage()));
 
-        manager.registerMessage(MessageKey.TOO_MANY_ARGUMENTS, (sender, context) -> sender.sendMessage(Messages.TOO_MANY_ARGS.getMessage()));
+        this.manager.registerMessage(MessageKey.TOO_MANY_ARGUMENTS, (sender, context) -> sender.sendMessage(Messages.TOO_MANY_ARGS.getMessage()));
 
-        manager.registerMessage(MessageKey.NOT_ENOUGH_ARGUMENTS, (sender, context) -> sender.sendMessage(Messages.NOT_ENOUGH_ARGS.getMessage()));
+        this.manager.registerMessage(MessageKey.NOT_ENOUGH_ARGUMENTS, (sender, context) -> sender.sendMessage(Messages.NOT_ENOUGH_ARGS.getMessage()));
 
-        manager.registerMessage(MessageKey.INVALID_ARGUMENT, (sender, context) -> sender.sendMessage(Messages.NOT_ONLINE.getMessage().replace("%player%", context.getTypedArgument())));
+        this.manager.registerMessage(MessageKey.INVALID_ARGUMENT, (sender, context) -> sender.sendMessage(Messages.NOT_ONLINE.getMessage().replace("%player%", context.getTypedArgument())));
 
-        manager.registerMessage(BukkitMessageKey.NO_PERMISSION, (sender, context) -> sender.sendMessage(Messages.NO_PERMISSION.getMessage()));
+        this.manager.registerMessage(BukkitMessageKey.NO_PERMISSION, (sender, context) -> sender.sendMessage(Messages.NO_PERMISSION.getMessage()));
 
-        manager.registerMessage(BukkitMessageKey.PLAYER_ONLY, (sender, context) -> sender.sendMessage(Messages.MUST_BE_A_PLAYER.getMessage()));
+        this.manager.registerMessage(BukkitMessageKey.PLAYER_ONLY, (sender, context) -> sender.sendMessage(Messages.MUST_BE_A_PLAYER.getMessage()));
 
-        manager.registerMessage(BukkitMessageKey.CONSOLE_ONLY, (sender, context) -> sender.sendMessage(Messages.MUST_BE_A_CONSOLE_SENDER.getMessage()));
+        this.manager.registerMessage(BukkitMessageKey.CONSOLE_ONLY, (sender, context) -> sender.sendMessage(Messages.MUST_BE_A_CONSOLE_SENDER.getMessage()));
 
-        manager.registerSuggestion(SuggestionKey.of("crates"), (sender, context) -> starter.getFileManager().getAllCratesNames().stream().toList());
+        this.manager.registerSuggestion(SuggestionKey.of("crates"), (sender, context) -> this.fileManager.getAllCratesNames().stream().toList());
 
-        manager.registerSuggestion(SuggestionKey.of("key-types"), (sender, context) -> KEYS);
+        this.manager.registerSuggestion(SuggestionKey.of("key-types"), (sender, context) -> KEYS);
 
-        manager.registerSuggestion(SuggestionKey.of("online-players"), (sender, context) -> getServer().getOnlinePlayers().stream().map(Player::getName).toList());
+        this.manager.registerSuggestion(SuggestionKey.of("online-players"), (sender, context) -> getServer().getOnlinePlayers().stream().map(Player::getName).toList());
 
-        manager.registerSuggestion(SuggestionKey.of("locations"), (sender, context) -> starter.getCrazyManager().getCrateLocations().stream().map(CrateLocation::getID).toList());
+        this.manager.registerSuggestion(SuggestionKey.of("locations"), (sender, context) -> this.crazyManager.getCrateLocations().stream().map(CrateLocation::getID).toList());
 
-        manager.registerSuggestion(SuggestionKey.of("prizes"), (sender, context) -> {
+        this.manager.registerSuggestion(SuggestionKey.of("prizes"), (sender, context) -> {
             List<String> numbers = new ArrayList<>();
 
-            starter.getCrazyManager().getCrateFromName(context.getArgs().get(0)).getPrizes().forEach(prize -> numbers.add(prize.getName()));
+            this.crazyManager.getCrateFromName(context.getArgs().get(0)).getPrizes().forEach(prize -> numbers.add(prize.getName()));
 
             return numbers;
         });
 
-        manager.registerSuggestion(SuggestionKey.of("numbers"), (sender, context) -> {
+        this.manager.registerSuggestion(SuggestionKey.of("numbers"), (sender, context) -> {
             List<String> numbers = new ArrayList<>();
 
             for (int i = 1; i <= 250; i++) numbers.add(i + "");
@@ -202,17 +206,56 @@ public class CrazyCrates extends JavaPlugin implements Listener {
             return numbers;
         });
 
-        manager.registerCommand(new BaseKeyCommand());
-        manager.registerCommand(new CrateBaseCommand());
+        this.manager.registerCommand(new BaseKeyCommand());
+        this.manager.registerCommand(new CrateBaseCommand());
     }
 
     private final List<String> KEYS = List.of("virtual", "v", "physical", "p");
 
-    public static CrazyCrates getPlugin() {
-        return plugin;
+    @Override
+    public void disable() {
+        this.starter.stop();
     }
 
-    public Starter getStarter() {
-        return starter;
+    @Override
+    public @NotNull Path getDirectory() {
+        return getDataFolder().toPath();
+    }
+
+    @Override
+    public @NotNull Path getCratesDirectory() {
+        return getDirectory().resolve("crates");
+    }
+
+    @Override
+    public @NotNull Path getCacheDirectory() {
+        return getDirectory().resolve("cache");
+    }
+
+    @Override
+    public @NotNull Path getLocaleDirectory() {
+        return getDirectory().resolve("locale");
+    }
+
+    @Override
+    public @NotNull Path getDataDirectory() {
+        return getDirectory().resolve("data");
+    }
+
+    @Override
+    public @NotNull FileManager getFileManager() {
+        return this.fileManager;
+    }
+
+    public CrazyManager getCrazyManager() {
+        return crazyManager;
+    }
+
+    public ChestStateHandler getChestStateHandler() {
+        return chestStateHandler;
+    }
+
+    public EventLogger getEventLogger() {
+        return eventLogger;
     }
 }

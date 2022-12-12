@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Wheel implements Listener {
+
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
+
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
     
     public static Map<Player, HashMap<Integer, ItemStack>> rewards = new HashMap<>();
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
-
-    private static final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
     
     public static void startWheel(final Player player, Crate crate, KeyType keyType, boolean checkHand) {
         if (!crazyManager.takeKeys(1, player, crate, keyType, checkHand)) {

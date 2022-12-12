@@ -11,7 +11,7 @@ public enum PluginSupport {
     
     private final String name;
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
     
     PluginSupport(String name) {
         this.name = name;

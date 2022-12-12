@@ -21,7 +21,7 @@ import java.util.UUID;
  */
 public class SkullCreator {
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
     
     /**
      * Creates a player skull based on a player's name.

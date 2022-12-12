@@ -19,7 +19,7 @@ public class StructureHandler {
 
     private final File file;
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
 
     public StructureHandler(File file) {
         this.file = file;

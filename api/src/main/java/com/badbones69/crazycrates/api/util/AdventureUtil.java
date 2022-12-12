@@ -13,6 +13,7 @@ public class AdventureUtil {
      * @param placeholders message placeholders
      */
     public static Component parse(String message, TagResolver.Single... placeholders) {
-        return Crates.api().getMessage().deserialize(message, placeholders);
+        //return Crates.api().getMessage().deserialize(message, placeholders);
+        return Component.text(message);
     }
 }

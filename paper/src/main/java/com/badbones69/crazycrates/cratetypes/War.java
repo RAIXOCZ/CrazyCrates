@@ -23,11 +23,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 
 public class War implements Listener {
+
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
+
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
     
     private static final String crateNameString = "Crate.CrateName";
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
-
-    private static final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
     private static HashMap<ItemStack, String> colorCodes;
     private static final HashMap<Player, Boolean> canPick = new HashMap<>();
     private static final HashMap<Player, Boolean> canClose = new HashMap<>();

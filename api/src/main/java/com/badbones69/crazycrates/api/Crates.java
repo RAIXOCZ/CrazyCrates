@@ -33,13 +33,6 @@ public interface Crates {
     @NotNull Path getDirectory();
 
     /**
-     * A parent folder for voucher codes / items.
-     *
-     * @return The folder called "types"
-     */
-    @NotNull Path getTypesDirectory();
-
-    /**
      * Stores all crate types.
      *
      * @return The folder called "crates"
@@ -72,11 +65,13 @@ public interface Crates {
      *
      * @return The console sender
      */
-    @NotNull Console getConsole();
-    @NotNull CrateManager getCrateManager();
+    // @NotNull Console getConsole();
+
+    // @NotNull CrateManager getCrateManager();
 
     @NotNull FileManager getFileManager();
-    @NotNull PlayerRegistryImpl getPlayerRegistry();
-    @NotNull MiniMessage getMessage();
 
+    // @NotNull PlayerRegistryImpl getPlayerRegistry();
+
+    //@NotNull MiniMessage getMessage();
 }

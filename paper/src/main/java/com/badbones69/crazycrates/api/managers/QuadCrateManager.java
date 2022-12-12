@@ -29,11 +29,11 @@ import java.util.Random;
 
 public class QuadCrateManager {
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final ChestStateHandler chestStateHandler = plugin.getStarter().getChestStateHandler();
+    private final ChestStateHandler chestStateHandler = plugin.getChestStateHandler();
 
-    private final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private final CrazyManager crazyManager = plugin.getCrazyManager();
 
     private static final List<QuadCrateManager> crateSessions = new ArrayList<>();
 

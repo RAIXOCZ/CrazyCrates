@@ -39,9 +39,9 @@ import java.util.regex.Pattern;
 @SuppressWarnings("deprecation")
 public class Methods {
 
-    private static final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private static final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private static final CrazyManager crazyManager = plugin.getStarter().getCrazyManager();
+    private static final CrazyManager crazyManager = plugin.getCrazyManager();
     private static final Random random = new Random();
 
     public final static Pattern HEX_PATTERN = Pattern.compile("#[a-fA-F\\d]{6}");

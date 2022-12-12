@@ -45,9 +45,9 @@ public class Crate {
     private final ArrayList<Tier> tiers;
     private final CrateHologram hologram;
 
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
+    private final CrazyCrates plugin = CrazyCrates.getInstance();
 
-    private final FileManager fileManager = plugin.getStarter().getFileManager();
+    private final FileManager fileManager = plugin.getFileManager();
     private int maxMassOpen;
 
     /**
