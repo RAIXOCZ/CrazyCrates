@@ -1,8 +1,7 @@
 package com.badbones69.crazycrates.api;
 
-import com.badbones69.crazycrates.CrazyCrates;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.simpleyaml.configuration.file.FileConfiguration;
+import org.simpleyaml.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,8 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class FileManager {
-
-    private final CrazyCrates plugin = CrazyCrates.getPlugin();
 
     private boolean log = false;
 
@@ -23,11 +20,14 @@ public class FileManager {
     private final HashMap<String, String> autoGenerateFiles = new HashMap<>();
     private final HashMap<Files, FileConfiguration> configurations = new HashMap<>();
 
+    private final File dataFolder = Crates.api().getDirectory().toFile();
+
     /**
      * Sets up the plugin and loads all necessary files.
      */
     public FileManager setup() {
-        if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
+
+        if (!dataFolder.exists()) dataFolder.mkdirs();
 
         files.clear();
         customFiles.clear();
@@ -35,34 +35,40 @@ public class FileManager {
 
         // Loads all the normal static files.
         for (Files file : Files.values()) {
-            File newFile = new File(plugin.getDataFolder(), file.getFileLocation());
+            File newFile = new File(dataFolder, file.getFileLocation());
 
-            if (isLogging()) plugin.getLogger().info("Loading the " + file.getFileName());
+            //if (isLogging()) plugin.getLogger().info("Loading the " + file.getFileName());
 
             if (!newFile.exists()) {
                 try {
-                    File serverFile = new File(plugin.getDataFolder(), "/" + file.getFileLocation());
+                    File serverFile = new File(dataFolder, "/" + file.getFileLocation());
                     InputStream jarFile = getClass().getResourceAsStream("/" + file.getFileJar());
                     copyFile(jarFile, serverFile);
                 } catch (Exception e) {
-                    if (isLogging()) plugin.getLogger().warning("Failed to load file: " + file.getFileName());
+                    //if (isLogging()) plugin.getLogger().warning("Failed to load file: " + file.getFileName());
                     e.printStackTrace();
                     continue;
                 }
             }
 
             files.put(file, newFile);
-            configurations.put(file, YamlConfiguration.loadConfiguration(newFile));
 
-            if (isLogging()) plugin.getLogger().info("Successfully loaded " + file.getFileName());
+            try {
+                configurations.put(file, YamlConfiguration.loadConfiguration(newFile));
+            } catch (IOException e) {
+                //if (isLogging())
+                e.printStackTrace();
+            }
+
+            //if (isLogging()) plugin.getLogger().info("Successfully loaded " + file.getFileName());
         }
 
         // Starts to load all the custom files.
         if (homeFolders.size() > 0) {
-            if (isLogging()) plugin.getLogger().info("Loading custom files.");
+            //if (isLogging()) plugin.getLogger().info("Loading custom files.");
 
             for (String homeFolder : homeFolders) {
-                File homeFile = new File(plugin.getDataFolder(), "/" + homeFolder);
+                File homeFile = new File(dataFolder, "/" + homeFolder);
 
                 if (homeFile.exists()) {
                     String[] list = homeFile.list();
@@ -75,7 +81,7 @@ public class FileManager {
                                 if (file.exists()) {
                                     customFiles.add(file);
 
-                                    if (isLogging()) plugin.getLogger().info("Loaded new custom file: " + homeFolder + "/" + name + ".");
+                                    //if (isLogging()) plugin.getLogger().info("Loaded new custom file: " + homeFolder + "/" + name + ".");
                                 }
                             }
                         }
@@ -83,23 +89,23 @@ public class FileManager {
                 } else {
                     homeFile.mkdir();
 
-                    if (isLogging()) plugin.getLogger().info("The folder " + homeFolder + "/ was not found so it was created.");
+                    //if (isLogging()) plugin.getLogger().info("The folder " + homeFolder + "/ was not found so it was created.");
 
                     for (String fileName : autoGenerateFiles.keySet()) {
                         if (autoGenerateFiles.get(fileName).equalsIgnoreCase(homeFolder)) {
                             homeFolder = autoGenerateFiles.get(fileName);
 
                             try {
-                                File serverFile = new File(plugin.getDataFolder(), homeFolder + "/" + fileName);
+                                File serverFile = new File(dataFolder, homeFolder + "/" + fileName);
                                 InputStream jarFile = getClass().getResourceAsStream((jarHomeFolders.getOrDefault(fileName, homeFolder)) + "/" + fileName);
                                 copyFile(jarFile, serverFile);
 
                                 if (fileName.toLowerCase().endsWith(".yml")) customFiles.add(new CustomFile(fileName, homeFolder));
 
-                                if (isLogging()) plugin.getLogger().info("Created new default file: " + homeFolder + "/" + fileName + ".");
+                                //if (isLogging()) plugin.getLogger().info("Created new default file: " + homeFolder + "/" + fileName + ".");
                             } catch (Exception e) {
                                 if (isLogging()) {
-                                    plugin.getLogger().warning("Failed to create new default file: " + homeFolder + "/" + fileName + "!");
+                                    //plugin.getLogger().warning("Failed to create new default file: " + homeFolder + "/" + fileName + "!");
                                     e.printStackTrace();
                                 }
                             }
@@ -108,7 +114,7 @@ public class FileManager {
                 }
             }
 
-            if (isLogging()) plugin.getLogger().info("Finished loading custom files.");
+            //if (isLogging()) plugin.getLogger().info("Finished loading custom files.");
         }
 
         return this;
@@ -210,7 +216,7 @@ public class FileManager {
         try {
             configurations.get(file).save(files.get(file));
         } catch (IOException e) {
-            plugin.getLogger().warning("Could not save " + file.getFileName() + "!");
+            //plugin.getLogger().warning("Could not save " + file.getFileName() + "!");
 
             e.printStackTrace();
         }
@@ -225,15 +231,15 @@ public class FileManager {
 
         if (file != null) {
             try {
-                file.getFile().save(new File(plugin.getDataFolder(), file.getHomeFolder() + "/" + file.getFileName()));
+                file.getFile().save(new File(dataFolder, file.getHomeFolder() + "/" + file.getFileName()));
 
-                if (isLogging()) plugin.getLogger().info("Successfully saved the " + file.getFileName() + ".");
+                //if (isLogging()) plugin.getLogger().info("Successfully saved the " + file.getFileName() + ".");
             } catch (Exception e) {
-                plugin.getLogger().warning("Could not save " + file.getFileName() + "!");
+                //plugin.getLogger().warning("Could not save " + file.getFileName() + "!");
                 e.printStackTrace();
             }
         } else {
-            if (isLogging()) plugin.getLogger().warning("The file " + name + ".yml could not be found!");
+            //if (isLogging()) plugin.getLogger().warning("The file " + name + ".yml could not be found!");
         }
     }
 
@@ -250,7 +256,12 @@ public class FileManager {
      * Overrides the loaded state file and loads the file systems file.
      */
     public void reloadFile(Files file) {
-        configurations.put(file, YamlConfiguration.loadConfiguration(files.get(file)));
+        try {
+            configurations.put(file, YamlConfiguration.loadConfiguration(files.get(file)));
+        } catch (IOException e) {
+            //if (isLogging())
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -261,15 +272,15 @@ public class FileManager {
 
         if (file != null) {
             try {
-                file.file = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/" + file.getHomeFolder() + "/" + file.getFileName()));
+                file.file = YamlConfiguration.loadConfiguration(new File(dataFolder, "/" + file.getHomeFolder() + "/" + file.getFileName()));
 
-                if (isLogging()) plugin.getLogger().info("Successfully reloaded the " + file.getFileName() + ".");
+                //if (isLogging()) plugin.getLogger().info("Successfully reloaded the " + file.getFileName() + ".");
             } catch (Exception e) {
-                plugin.getLogger().warning("Could not reload the " + file.getFileName() + "!");
+                //plugin.getLogger().warning("Could not reload the " + file.getFileName() + "!");
                 e.printStackTrace();
             }
         } else {
-            if (isLogging()) plugin.getLogger().warning("The file " + name + ".yml could not be found!");
+            //if (isLogging()) plugin.getLogger().warning("The file " + name + ".yml could not be found!");
         }
     }
 
@@ -291,10 +302,10 @@ public class FileManager {
         }
     }
 
-    public ArrayList<String> getAllCratesNames(CrazyCrates plugin) {
+    public ArrayList<String> getAllCratesNames() {
         ArrayList<String> files = new ArrayList<>();
 
-        String[] file = new File(plugin.getDataFolder(), "/crates").list();
+        String[] file = new File(dataFolder, "/crates").list();
 
         if (file != null) {
             for (String name : file) {
@@ -335,9 +346,7 @@ public class FileManager {
         private final String fileJar;
         private final String fileLocation;
 
-        private final CrazyCrates plugin = CrazyCrates.getPlugin();
-
-        private final FileManager fileManager = plugin.getStarter().getFileManager();
+        private final FileManager fileManager = Crates.api().getFileManager();
 
         /**
          * The files that the server will try and load.
@@ -414,8 +423,6 @@ public class FileManager {
         private final String homeFolder;
         private FileConfiguration file;
 
-        private final CrazyCrates plugin = CrazyCrates.getPlugin();
-
         /**
          * A custom file that is being made.
          * @param name Name of the file.
@@ -426,16 +433,21 @@ public class FileManager {
             this.fileName = name;
             this.homeFolder = homeFolder;
 
-            if (new File(plugin.getDataFolder(), "/" + homeFolder).exists()) {
-                if (new File(plugin.getDataFolder(), "/" + homeFolder + "/" + name).exists()) {
-                    file = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/" + homeFolder + "/" + name));
+            if (new File(dataFolder, "/" + homeFolder).exists()) {
+                if (new File(dataFolder, "/" + homeFolder + "/" + name).exists()) {
+                    try {
+                        file = YamlConfiguration.loadConfiguration(new File(dataFolder, "/" + homeFolder + "/" + name));
+                    } catch (IOException e) {
+                        //if (isLogging())
+                        e.printStackTrace();
+                    }
                 } else {
                     file = null;
                 }
             } else {
-                new File(plugin.getDataFolder(), "/" + homeFolder).mkdir();
+                new File(dataFolder, "/" + homeFolder).mkdir();
 
-                if (isLogging()) plugin.getLogger().info("The folder " + homeFolder + "/ was not found so it was created.");
+                //if (isLogging()) plugin.getLogger().info("The folder " + homeFolder + "/ was not found so it was created.");
 
                 file = null;
             }
@@ -488,18 +500,18 @@ public class FileManager {
         public Boolean saveFile() {
             if (file != null) {
                 try {
-                    file.save(new File(plugin.getDataFolder(), homeFolder + "/" + fileName));
+                    file.save(new File(dataFolder, homeFolder + "/" + fileName));
 
-                    if (isLogging()) plugin.getLogger().info("Successfully saved the " + fileName + ".");
+                    //if (isLogging()) plugin.getLogger().info("Successfully saved the " + fileName + ".");
 
                     return true;
                 } catch (Exception e) {
-                    plugin.getLogger().warning("Could not save " + fileName + "!");
+                    //plugin.getLogger().warning("Could not save " + fileName + "!");
                     e.printStackTrace();
                     return false;
                 }
             } else {
-                if (isLogging()) plugin.getLogger().warning("There was a null custom file that could not be found!");
+                //if (isLogging()) plugin.getLogger().warning("There was a null custom file that could not be found!");
             }
 
             return false;
@@ -512,17 +524,17 @@ public class FileManager {
         public Boolean reloadFile() {
             if (file != null) {
                 try {
-                    file = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/" + homeFolder + "/" + fileName));
+                    file = YamlConfiguration.loadConfiguration(new File(dataFolder, "/" + homeFolder + "/" + fileName));
 
-                    if (isLogging()) plugin.getLogger().info("Successfully reloaded the " + fileName + ".");
+                    //if (isLogging()) plugin.getLogger().info("Successfully reloaded the " + fileName + ".");
 
                     return true;
                 } catch (Exception e) {
-                    plugin.getLogger().warning("Could not reload the " + fileName + "!");
+                    //plugin.getLogger().warning("Could not reload the " + fileName + "!");
                     e.printStackTrace();
                 }
             } else {
-                if (isLogging()) plugin.getLogger().warning("There was a null custom file that was not found!");
+                //if (isLogging()) plugin.getLogger().warning("There was a null custom file that was not found!");
             }
 
             return false;
