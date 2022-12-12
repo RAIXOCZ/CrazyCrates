@@ -1,16 +1,12 @@
 plugins {
-    java
+    id("crazycrates-base")
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 val buildNumber: String? = System.getenv("BUILD_NUMBER")
 
-val jenkinsVersion = "1.11.8-b$buildNumber"
-
-group = "com.badbones69.crazycrates"
-version = "1.11.8"
-description = "Add unlimited crates to your server with 10 different crate types to choose from!"
+val jenkinsVersion = "${rootProject.version}-b$buildNumber"
 
 repositories {
     /**
@@ -55,6 +51,8 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":api"))
+
     implementation("dev.triumphteam", "triumph-cmd-bukkit", "2.0.0-SNAPSHOT")
 
     implementation("de.tr7zw", "nbt-data-api", "2.10.0")
@@ -76,10 +74,8 @@ dependencies {
         exclude(group = "org.spigotmc", module = "spigot")
         exclude(group = "org.bukkit", module = "bukkit")
     }
-}
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    implementation("me.carleslc.Simple-Yaml", "Simple-Yaml", "1.8.2")
 }
 
 tasks {
@@ -97,10 +93,6 @@ tasks {
         ).forEach {
             relocate(it, "${rootProject.group}.plugin.lib.$it")
         }
-    }
-
-    compileJava {
-        options.release.set(17)
     }
 
     processResources {
